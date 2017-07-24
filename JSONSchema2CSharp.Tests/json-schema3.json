@@ -1,0 +1,30 @@
+﻿{
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "ExampleText": {
+      "type": "string"
+    },
+    "SelectedIntentName": {
+      "type": "string"
+    },
+    "EntityLabels": {
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "EntityType": {
+            "type": "string"
+          },
+          "StartToken": {
+            "type": "integer"
+          },
+          "EndToken": {
+            "type": "integer"
+          }
+        }
+      },
+      "type": "array"
+    }
+  }
+}
