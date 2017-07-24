@@ -1,0 +1,49 @@
+﻿{
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "guid"
+    },
+    "name": {
+      "type": "string"
+    },
+    "Description": {
+      "type": "string"
+    },
+    "Culture": {
+      "type": "string"
+    },
+    "Active": {
+      "type": "boolean"
+    },
+    "created_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "modified_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "publish_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "URL": {
+      "type": "string"
+    },
+    "AuthKey": {
+      "type": "string"
+    },
+    "NumberOfIntents": {
+      "type": "integer"
+    },
+    "NumberOfEntities": {
+      "type": "integer"
+    },
+    "IsTrained": {
+      "type": "boolean"
+    }
+  }
+}
