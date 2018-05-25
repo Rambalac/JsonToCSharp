@@ -8,14 +8,19 @@ namespace JsonToCSharp
 {
     using System;
     using System.ComponentModel.Design;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Windows;
     using EnvDTE;
     using EnvDTE80;
     using JsonSchema;
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
+    using Microsoft.VisualStudio.Threading;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
+    using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+    using Task = System.Threading.Tasks.Task;
 
     /// <summary>
     /// Command handler
@@ -45,24 +50,17 @@ namespace JsonToCSharp
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
-        private readonly Package package;
+        private AsyncPackage package;
 
         private DTE2 _dte;
+        private DTE2 dte;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PasteFromJsonSchema" /> class.
         /// Adds our command handlers for menu (commands must exist in the command table file)
         /// </summary>
-        /// <param name="package">Owner package, not null.</param>
-        private PasteFromJsonSchema(Package package)
+        private PasteFromJsonSchema()
         {
-            this.package = package ?? throw new ArgumentNullException(nameof(package));
-
-            if (ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
-            {
-                AddMenuItem(commandService, SchemaMenuItemCallback, SchemaCommandSet, SchemaCommandId);
-                AddMenuItem(commandService, JsonMenuItemCallback, JsonCommandSet, JsonCommandId);
-            }
         }
 
         /// <summary>
@@ -75,15 +73,30 @@ namespace JsonToCSharp
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
-        private IServiceProvider ServiceProvider => package;
+        private IAsyncServiceProvider ServiceProvider => package;
 
         /// <summary>
         /// Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
-        public static void Initialize(Package package)
+        public static async Task InitializeAsync(AsyncPackage package, CancellationToken cancellation)
         {
-            Instance = new PasteFromJsonSchema(package);
+            Instance = new PasteFromJsonSchema();
+            await Instance.InternalInitializeAsync(package, cancellation);
+        }
+
+        private async Task InternalInitializeAsync(AsyncPackage package, CancellationToken cancellation)
+        {
+            this.package = package ?? throw new ArgumentNullException(nameof(package));
+            dte = await GetDteAsync();
+
+            if ((await ServiceProvider.GetServiceAsync(typeof(IMenuCommandService))) is OleMenuCommandService service)
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellation);
+                AddMenuItem(service, SchemaMenuItemCallback, SchemaCommandSet, SchemaCommandId);
+                AddMenuItem(service, JsonMenuItemCallback, JsonCommandSet, JsonCommandId);
+                await TaskScheduler.Default;
+            }
         }
 
         private void AddMenuItem(OleMenuCommandService commandService, EventHandler menuItemCallback, Guid commandSet, int commandId)
@@ -94,7 +107,7 @@ namespace JsonToCSharp
             commandService.AddCommand(menuItem);
         }
 
-        private DTE2 GetDte() => _dte ?? (_dte = Package.GetGlobalService(typeof(SDTE)) as DTE2);
+        private async Task<DTE2> GetDteAsync() => _dte ?? (_dte = await package.GetServiceAsync(typeof(SDTE)) as DTE2);
 
         private void JsonMenuItemCallback(object sender, EventArgs e)
         {
@@ -104,7 +117,6 @@ namespace JsonToCSharp
                 var doc = JToken.Parse(schemaText, new JsonLoadSettings { CommentHandling = CommentHandling.Load });
                 var classText = JTokenConverter.Convert(doc, Options.ToConverterOptions());
 
-                var dte = GetDte();
                 try
                 {
                     dte.UndoContext.Open("Paste JSON Schema as Class");
@@ -136,7 +148,7 @@ namespace JsonToCSharp
             pasteCommand.Visible = false;
             pasteCommand.Enabled = false;
 
-            var activeDoc = GetDte().ActiveDocument;
+            var activeDoc = dte.ActiveDocument;
             if (activeDoc?.ProjectItem?.ContainingProject != null)
             {
                 if (activeDoc.Language.Equals("CSharp"))
@@ -165,7 +177,6 @@ namespace JsonToCSharp
                 var obj = JsonConvert.DeserializeObject<JsonObject>(schemaText);
                 var classText = obj.ToString(Options.ToConverterOptions());
 
-                var dte = GetDte();
                 try
                 {
                     dte.UndoContext.Open("Paste JSON Schema as Schema");

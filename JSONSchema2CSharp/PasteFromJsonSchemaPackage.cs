@@ -6,7 +6,9 @@
 
 namespace JsonToCSharp
 {
+    using System;
     using System.Runtime.InteropServices;
+    using System.Threading;
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
@@ -29,13 +31,13 @@ namespace JsonToCSharp
     ///     .vsixmanifest file.
     ///     </para>
     /// </remarks>
-    [PackageRegistration(UseManagedResourcesOnly = true)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(PackageGuidString)]
-    [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideOptionPage(typeof(JsonSchemaOptionModel), "JSON tools", "General", 0, 0, true)]
-    public sealed class PasteFromJsonSchemaPackage : Package
+    public sealed class PasteFromJsonSchemaPackage : AsyncPackage
     {
         /// <summary>
         /// PasteFromJsonSchemaPackage GUID string.
@@ -48,10 +50,10 @@ namespace JsonToCSharp
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override void Initialize()
+        protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            PasteFromJsonSchema.Initialize(this);
-            base.Initialize();
+            await PasteFromJsonSchema.InitializeAsync(this, cancellationToken);
+            await base.InitializeAsync(cancellationToken, progress);
         }
     }
 }

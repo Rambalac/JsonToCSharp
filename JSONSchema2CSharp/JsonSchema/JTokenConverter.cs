@@ -2,7 +2,6 @@ namespace JsonToCSharp.JsonSchema
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Immutable;
     using System.Globalization;
     using System.Linq;
     using System.Text;
@@ -15,14 +14,14 @@ namespace JsonToCSharp.JsonSchema
         public TypeDefinition(string name, IDictionary<string, string> props)
         {
             TypeName = name;
-            Properties = props.ToImmutableDictionary();
+            Properties = props;
             hashCode = Properties.Aggregate(
                 17, (acc, pair) => (((acc * 31) + pair.Key.GetHashCode()) * 31) + pair.Value.GetHashCode());
         }
 
         public string TypeName { get; }
 
-        public ImmutableDictionary<string, string> Properties { get; }
+        public IDictionary<string, string> Properties { get; }
 
         public override bool Equals(object obj)
         {
