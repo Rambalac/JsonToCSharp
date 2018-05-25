@@ -56,15 +56,9 @@ namespace JsonToCSharp
         /// <param name="package">Owner package, not null.</param>
         private PasteFromJsonSchema(Package package)
         {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
+            this.package = package ?? throw new ArgumentNullException(nameof(package));
 
-            this.package = package;
-
-            var commandService = ServiceProvider.GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if (commandService != null)
+            if (ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
             {
                 AddMenuItem(commandService, SchemaMenuItemCallback, SchemaCommandSet, SchemaCommandId);
                 AddMenuItem(commandService, JsonMenuItemCallback, JsonCommandSet, JsonCommandId);
@@ -174,7 +168,7 @@ namespace JsonToCSharp
                 var dte = GetDte();
                 try
                 {
-                    dte.UndoContext.Open("Paste JSON Schema as Class");
+                    dte.UndoContext.Open("Paste JSON Schema as Schema");
                     var selection = (TextSelection)dte.ActiveDocument.Selection;
                     if (selection != null)
                     {

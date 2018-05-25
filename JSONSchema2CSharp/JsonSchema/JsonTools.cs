@@ -30,7 +30,7 @@ namespace JsonToCSharp.JsonSchema
 
         public static string ToSingular(this string name)
         {
-            if (name.Length > 2 && name[name.Length - 1] == 's')
+            if ((name.Length > 2) && (name[name.Length - 1] == 's'))
             {
                 var str = new StringBuilder(name);
                 str.Length -= 1;

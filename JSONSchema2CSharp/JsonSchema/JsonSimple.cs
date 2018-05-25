@@ -28,7 +28,7 @@ namespace JsonToCSharp.JsonSchema
 
         public override string Append(string name, List<string> classes, ConverterOptions options)
         {
-            if (Format != null && Formats.TryGetValue(Format, out var fresult))
+            if ((Format != null) && Formats.TryGetValue(Format, out var fresult))
             {
                 return fresult;
             }

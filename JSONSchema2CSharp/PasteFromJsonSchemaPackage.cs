@@ -9,6 +9,7 @@ namespace JsonToCSharp
     using System.Runtime.InteropServices;
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.Shell;
+    using Microsoft.VisualStudio.Shell.Interop;
 
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
@@ -32,7 +33,7 @@ namespace JsonToCSharp
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(PackageGuidString)]
-    [ProvideAutoLoad(VSConstants.UICONTEXT.CSharpProject_string)]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
     [ProvideOptionPage(typeof(JsonSchemaOptionModel), "JSON tools", "General", 0, 0, true)]
     public sealed class PasteFromJsonSchemaPackage : Package
     {
