@@ -17,7 +17,7 @@ namespace JsonToCSharp.JsonSchema
             TypeName = name;
             Properties = props.ToImmutableDictionary();
             hashCode = Properties.Aggregate(
-                17, (acc, pair) => (acc * 31 + pair.Key.GetHashCode()) * 31 + pair.Value.GetHashCode());
+                17, (acc, pair) => (((acc * 31) + pair.Key.GetHashCode()) * 31) + pair.Value.GetHashCode());
         }
 
         public string TypeName { get; }
@@ -26,7 +26,7 @@ namespace JsonToCSharp.JsonSchema
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -75,7 +75,7 @@ namespace JsonToCSharp.JsonSchema
                 classstr.AppendFormat("public {0} {1} {{ get; set; }}", cl, propname);
                 if (options.CreateLists && cl.StartsWith("IList"))
                 {
-                    classstr.AppendFormat(" = new {0}()", cl.Substring(1));
+                    classstr.AppendFormat(" = new {0}();", cl.Substring(1));
                 }
                 classstr.Append("\r\n");
             }
@@ -86,9 +86,9 @@ namespace JsonToCSharp.JsonSchema
 
         private bool Equals(TypeDefinition other)
         {
-            return hashCode == other.hashCode
-                   && Properties.All(p => other.Properties.TryGetValue(p.Key, out var val) && val == p.Value)
-                   && other.Properties.All(p => Properties.TryGetValue(p.Key, out var val) && val == p.Value);
+            return (hashCode == other.hashCode)
+                   && Properties.All(p => other.Properties.TryGetValue(p.Key, out var val) && (val == p.Value))
+                   && other.Properties.All(p => Properties.TryGetValue(p.Key, out var val) && (val == p.Value));
         }
     }
 
@@ -141,7 +141,7 @@ namespace JsonToCSharp.JsonSchema
             foreach (var item in token.Children<JToken>())
             {
                 var type = Append(item, name, classes, options);
-                if (lastType != null && type != lastType)
+                if ((lastType != null) && (type != lastType))
                 {
                     commonType = "object";
                 }
