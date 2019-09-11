@@ -52,8 +52,8 @@ namespace JsonToCSharp
         /// </summary>
         protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
+            await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             await PasteFromJsonSchema.InitializeAsync(this, cancellationToken);
-            await base.InitializeAsync(cancellationToken, progress);
         }
     }
 }
